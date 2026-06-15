@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Meta tags PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MotoDash">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Dashboard para motoboys Uber Moto e 99 Moto">
+    
+    <title>MotoDash</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23000'/%3E%3Ctext x='256' y='280' font-size='180' font-weight='900' text-anchor='middle' fill='white' font-family='Arial,sans-serif' letter-spacing='-4'%3EMoto%3C/text%3E%3Ctext x='256' y='400' font-size='120' font-weight='700' text-anchor='middle' fill='%2306c167' font-family='Arial,sans-serif' letter-spacing='8'%3EDash%3C/text%3E%3C/svg%3E">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23000'/%3E%3Ctext x='256' y='280' font-size='180' font-weight='900' text-anchor='middle' fill='white' font-family='Arial,sans-serif' letter-spacing='-4'%3EMoto%3C/text%3E%3Ctext x='256' y='400' font-size='120' font-weight='700' text-anchor='middle' fill='%2306c167' font-family='Arial,sans-serif' letter-spacing='8'%3EDash%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        :root {
+            --bg: #000;
+            --card: #141414;
+            --border: #1f1f1f;
+            --text: #f5f5f5;
+            --text-secondary: #8a8a8a;
+            --uber: #06c167;
+            --nove9: #ffc107;
+            --red: #ff453a;
+            --blue: #3b82f6;
+            --radius: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #f5f5f5;
+            min-height: 100dvh;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px 16px calc(70px + var(--safe-bottom)) 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+        .splash.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .splash-logo {
+            width: 90px;
+            height: 90px;
+            background: #000;
+            border: 3px solid #fff;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: splashPulse 2s ease-in-out infinite;
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .splash-logo-text {
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .splash-logo-sub {
+            font-size: 18px;
+            font-weight: 700;
+            color: #06c167;
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+        .splash-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .splash-subtitle {
+            font-size: 11px;
+            color: #666;
+        }
+        .splash-loading {
+            width: 40px;
+            height: 3px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .splash-loading-bar {
+            height: 100%;
+            width: 30%;
+            background: #06c167;
+            border-radius: 2px;
+            animation: splashLoading 1s ease-in-out infinite;
+        }
+        @keyframes splashLoading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 4px 0;
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border: 2px solid #fff;
+            border-radius: 11px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .header-logo-top {
+            font-size: 10px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .header-logo-bottom {
+            font-size: 7px;
+            font-weight: 700;
+            color: #06c167;
+            letter-spacing: 1px;
+        }
+        .header-title {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .header-subtitle {
+            font-size: 10px;
+            color: #8a8a8a;
+            font-weight: 500;
+        }
+        .badge-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 5px 9px;
+            border-radius: 14px;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .badge-streak {
+            background: #06c16715;
+            color: #06c167;
+            border: 1px solid #06c16730;
+        }
+        .badge-record {
+            background: #ffc10715;
+            color: #ffc107;
+            border: 1px solid #ffc10730;
+        }
+
+        .empty-dashboard {
+            text-align: center;
+            padding: 60px 20px;
+            color: #3a3a3a;
+        }
+        .empty-dashboard .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.25;
+        }
+        .empty-dashboard .empty-text {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #444;
+        }
+        .empty-dashboard .empty-sub {
+            font-size: 11px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .empty-dashboard .empty-action {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: #fff;
+            color: #000;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+        }
+        .empty-dashboard .empty-action:active {
+            transform: scale(0.96);
+            background: #e0e0e0;
+        }
+
+        .mes-selector {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            background: #141414;
+            border-radius: 14px;
+            padding: 6px 8px;
+            border: 1px solid #1f1f1f;
+        }
+        .mes-selector.visible {
+            display: flex;
+        }
+        .mes-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .mes-btn:active {
+            background: #333;
+            border-color: #444;
+        }
+        .mes-btn.hoje {
+            width: auto;
+            border-radius: 16px;
+            padding: 0 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #06c167;
+            border-color: #06c16740;
+            background: #06c16710;
+            letter-spacing: 0.03em;
+        }
+        .mes-info {
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+        }
+        .mes-nome {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #fff;
+        }
+        .mes-total {
+            font-size: 9px;
+            color: #5a5a5a;
+            margin-top: 1px;
+            font-weight: 500;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+        .dashboard-section.visible {
+            display: block;
+        }
+        .dashboard-section.grid {
+            display: none;
+        }
+        .dashboard-section.grid.visible {
+            display: grid;
+        }
+
+        .metas-card {
+            background: #141414;
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: 1px solid #1f1f1f;
+        }
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .meta-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .meta-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .meta-dot.bruta {
+            background: #06c167;
+            box-shadow: 0 0 6px #06c16750;
+        }
+        .meta-dot.liquida {
+            background: #3b82f6;
+            box-shadow: 0 0 6px #3b82f650;
+        }
+        .meta-label {
+            font-size: 11px;
+            color: #8a8a8a;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .meta-value {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: right;
+        }
+        .meta-track {
+            height: 4px;
+            background: #1f1f1f;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .meta-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s;
+        }
+        .meta-fill.bruta {
+            background: linear-gradient(90deg, #06c167, #00e676);
+        }
+        .meta-fill.liquida {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+        .meta-fill.completed {
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .stat-card {
+            background: #141414;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #1f1f1f;
+        }
+        .stat-card.span-2 {
+            grid-column: span 2;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #8a8a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .stat-value.green {
+            color: #06c167;
+        }
+        .stat-value.yellow {
+            color: #ffc107;
+        }
+
+        .semanal-card {
+            background: #141414;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #1f1f1f;
+            margin-bottom: 10px;
+        }
+        .semanal-title {
+            font-size: 10px;
+            color: #8a8a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .semanal-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 80px;
+            padding: 0 2px;
+        }
+        .semanal-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .semanal-bar {
+            width: 100%;
+            max-width: 32px;
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s;
+            min-height: 2px;
+        }
+        .semanal-bar.uber {
+            background: linear-gradient(180deg, #06c167, #00a050);
+        }
+        .semanal-bar.nove9 {
+            background: linear-gradient(180deg, #ffc107, #e6a800);
+        }
+        .semanal-dia {
+            font-size: 8px;
+            color: #666;
+            text-align: center;
+        }
+        .semanal-val {
+            font-size: 7px;
+            color: #888;
+            text-align: center;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .chart-card {
+            background: #141414;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #1f1f1f;
+            text-align: center;
+        }
+        .chart-card.full {
+            grid-column: span 2;
+        }
+        .chart-title {
+            font-size: 10px;
+            color: #8a8a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .donut-wrap {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 6px;
+        }
+        .donut-wrap svg {
+            width: 90px;
+            height: 90px;
+            transform: rotate(-90deg);
+        }
+        .donut-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            font-size: 9px;
+        }
+        .donut-legend span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            color: #8a8a8a;
+            font-weight: 500;
+        }
+        .legend-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .bar-chart {
+            padding: 0 2px;
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+            font-size: 10px;
+        }
+        .bar-row.separator {
+            border-top: 1px dashed #222;
+            padding-top: 7px;
+            margin-top: 3px;
+        }
+        .bar-label {
+            width: 68px;
+            font-weight: 600;
+            color: #bbb;
+            font-size: 9px;
+        }
+        .bar-track {
+            flex: 1;
+            height: 16px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s;
+        }
+        .bar-val {
+            width: 75px;
+            text-align: right;
+            font-size: 9px;
+            color: #8a8a8a;
+            font-weight: 600;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: #1f1f1f;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .kpi-cell {
+            background: #141414;
+            padding: 11px 6px;
+            text-align: center;
+        }
+        .kpi-val {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .kpi-val.accent {
+            color: #06c167;
+        }
+        .kpi-label {
+            font-size: 8px;
+            color: #5a5a5a;
+            margin-top: 2px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: #0a0a0af0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            padding: 6px 8px calc(6px + var(--safe-bottom)) 8px;
+            gap: 4px;
+            border-top: 1px solid #1a1a1a;
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            padding: 9px 4px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-item.active {
+            color: #06c167;
+            background: #06c16710;
+        }
+
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-label {
+            display: block;
+            font-size: 10px;
+            color: #8a8a8a;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        .form-input,
+        .form-select {
+            width: 100%;
+            background: #111;
+            border: 1px solid #1f1f1f;
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-input:focus,
+        .form-select:focus {
+            border-color: #333;
+            outline: none;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #fff;
+        }
+        .btn-sm {
+            width: auto;
+            padding: 7px 12px;
+            font-size: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #aaa;
+            font-size: 11px;
+            padding: 9px;
+            font-weight: 600;
+        }
+        .btn-outline.uber-btn {
+            border-color: #06c16730;
+            color: #06c167;
+        }
+        .btn-outline.nove9-btn {
+            border-color: #ffc10730;
+            color: #ffc107;
+        }
+        .btn-tag {
+            width: auto;
+            padding: 7px 12px;
+            font-size: 10px;
+            border-radius: 10px;
+            background: #111;
+            border: 1px solid #222;
+            color: #999;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-tag.active {
+            background: #fff;
+            border-color: #fff;
+            color: #000;
+        }
+
+        .record-item {
+            background: #141414;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 6px;
+            border: 1px solid #1f1f1f;
+        }
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .record-date {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .record-value {
+            font-weight: 700;
+            font-size: 15px;
+            color: #06c167;
+        }
+        .record-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            font-size: 9px;
+        }
+        .record-tag {
+            background: #1a1a1a;
+            padding: 3px 7px;
+            border-radius: 6px;
+            color: #888;
+        }
+        .record-apps {
+            display: flex;
+            gap: 5px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .record-app {
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .record-app.uber {
+            background: #06c16715;
+            color: #06c167;
+        }
+        .record-app.nove9 {
+            background: #ffc10715;
+            color: #ffc107;
+        }
+        .app-ind {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+        .app-ind.uber {
+            background: #06c167;
+        }
+        .app-ind.nove9 {
+            background: #ffc107;
+        }
+
+        .maint-item {
+            background: #141414;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 6px;
+            border: 1px solid #1f1f1f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .maint-item.warning {
+            border-left: 3px solid #ffc107;
+        }
+        .maint-item.danger {
+            border-left: 3px solid #ff453a;
+        }
+        .maint-info strong {
+            font-size: 12px;
+        }
+        .maint-info small {
+            font-size: 9px;
+            color: #666;
+            display: block;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: #141414;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 360px;
+            border: 1px solid #222;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.7;
+        }
+
+        .footer-credit {
+            text-align: center;
+            padding: 12px;
+            font-size: 9px;
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .info-box {
+            background: #1a1a0a;
+            border: 1px solid #3a3a0a;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 9px;
+            color: #ffc107;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .color-input {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            background: transparent;
+        }
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #ff8a80;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            opacity: 0.6;
+        }
+        .btn-delete:active {
+            opacity: 1;
+            background: #ff453a15;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div class="splash" id="splashScreen">
+        <div class="splash-logo">
+            <span class="splash-logo-text">Moto</span>
+            <span class="splash-logo-sub">Dash</span>
+        </div>
+        <div class="splash-name">MotoDash</div>
+        <div class="splash-subtitle">Uber Moto · 99 Moto</div>
+        <div class="splash-loading">
+            <div class="splash-loading-bar"></div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <span class="header-logo-top">Moto</span>
+                <span class="header-logo-bottom">Dash</span>
+            </div>
+            <div>
+                <div class="header-title">MotoDash</div>
+                <div class="header-subtitle">Uber Moto · 99 Moto</div>
+            </div>
+        </div>
+        <div class="badge-row">
+            <span class="badge badge-streak" id="badgeStreak" style="display:none;"></span>
+            <span class="badge badge-record" id="badgeRecord" style="display:none;"></span>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pageDashboard">
+        <div class="empty-dashboard" id="emptyDashboard">
+            <div class="empty-icon">🏍️</div>
+            <div class="empty-text">Nenhum dado ainda</div>
+            <div class="empty-sub">Comece a registrar seus dias na aba<br><strong>Lançar</strong> para ver seu dashboard</div>
+            <button class="empty-action" onclick="switchPage('lancar')">Começar agora</button>
+        </div>
+
+        <div class="mes-selector" id="mesSelector">
+            <button class="mes-btn" onclick="mesAnterior()">‹</button>
+            <div class="mes-info"><div class="mes-nome" id="mesNome"></div><div class="mes-total" id="mesTotal"></div></div>
+            <button class="mes-btn" onclick="mesSeguinte()">›</button>
+            <button class="mes-btn hoje" onclick="mesAtual()">Hoje</button>
+        </div>
+
+        <div class="dashboard-section" id="secMetas">
+            <div class="metas-card">
+                <div class="meta-row" onclick="abrirModalMeta()"><div class="meta-info"><span class="meta-dot bruta"></span><span class="meta-label">Meta Bruta</span></div><span class="meta-value" id="metaBrutaTexto">--</span></div>
+                <div class="meta-track"><div class="meta-fill bruta" id="metaBrutaFill" style="width:0%"></div></div>
+                <div class="meta-row" onclick="abrirModalMeta()"><div class="meta-info"><span class="meta-dot liquida"></span><span class="meta-label">Meta Líquida</span></div><span class="meta-value" id="metaLiquidaTexto">--</span></div>
+                <div class="meta-track"><div class="meta-fill liquida" id="metaLiquidaFill" style="width:0%"></div></div>
+            </div>
+        </div>
+
+        <div class="dashboard-section" id="secSemanal">
+            <div class="semanal-card">
+                <div class="semanal-title"><span>Esta Semana</span><span style="font-size:11px;color:#06c167;font-weight:700;" id="semanalTotal">--</span></div>
+                <div class="semanal-bars" id="semanalBars"></div>
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:#555;margin-top:6px;"><span id="semanalMedia"></span><span id="semanalVs"></span></div>
+            </div>
+        </div>
+
+        <div class="dashboard-section grid" id="secCards" style="grid-template-columns:1fr 1fr;">
+            <div class="stat-card"><div class="stat-label">Capital Bruto</div><div class="stat-value" id="cardBruto">--</div></div>
+            <div class="stat-card"><div class="stat-label">Gastos Totais</div><div class="stat-value yellow" id="cardCustos">--</div></div>
+            <div class="stat-card span-2"><div class="stat-label">Lucro Líquido</div><div class="stat-value green" id="cardLiquido">--</div></div>
+        </div>
+
+        <div class="dashboard-section" id="secCharts">
+            <div class="charts-row">
+                <div class="chart-card"><div class="chart-title">Distribuição</div><div class="donut-wrap" id="donutDistribuicao"></div><div class="donut-legend" id="legendDistribuicao"></div></div>
+                <div class="chart-card"><div class="chart-title">Uber vs 99</div><div class="donut-wrap" id="donutVs"></div><div class="donut-legend" id="legendVs"></div></div>
+            </div>
+            <div class="chart-card full"><div class="chart-title">Capital vs Gastos</div><div class="bar-chart" id="barCapitalGastos"></div><div class="info-box" id="infoManutencao" style="display:none;"></div></div>
+        </div>
+
+        <div class="dashboard-section" id="secKPIs">
+            <div class="kpi-grid">
+                <div class="kpi-cell"><div class="kpi-val accent" id="kpiHora">--</div><div class="kpi-label">R$/hora</div></div>
+                <div class="kpi-cell"><div class="kpi-val" id="kpiKm">--</div><div class="kpi-label">R$/km</div></div>
+                <div class="kpi-cell"><div class="kpi-val" id="kpiEntregas">--</div><div class="kpi-label">Corridas</div></div>
+                <div class="kpi-cell"><div class="kpi-val" id="kpiDias">--</div><div class="kpi-label">Dias</div></div>
+                <div class="kpi-cell"><div class="kpi-val" id="kpiTotalKm">--</div><div class="kpi-label">Km total</div></div>
+                <div class="kpi-cell"><div class="kpi-val" id="kpiCustoKm">--</div><div class="kpi-label">R$/km comb.</div></div>
+            </div>
+        </div>
+
+        <div class="dashboard-section" id="secZonas">
+            <div class="chart-card full"><div class="chart-title">Melhores Zonas</div><div id="zonaContent"></div></div>
+        </div>
+
+        <div class="footer-credit">Desenvolvido por Matheus Pacifico Evangelista</div>
+    </div>
+
+    <!-- LANÇAR -->
+    <div class="page" id="pageLancar">
+        <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="inputData"></div>
+        <div class="form-group"><label class="form-label">Zona Principal</label>
+            <select class="form-select" id="inputZona">
+                <option value="centro">Centro / Shopping</option><option value="zona_sul">Zona Sul (Atalaia)</option><option value="orla">Orla / Aruana</option><option value="zona_norte">Zona Norte</option><option value="grande_aj">Grande Aracaju</option><option value="misto">Misto (rodando tudo)</option>
+            </select>
+        </div>
+        <div class="quick-actions">
+            <button type="button" class="btn-tag" id="tagZerar" onclick="zerarCampos()">Zerar tudo</button>
+            <button type="button" class="btn-tag active" id="tagDiaTodo" onclick="setTemplate('diaTodo')">Dia todo</button>
+            <button type="button" class="btn-tag" id="tagSoUber" onclick="setTemplate('soUber')">Só Uber</button>
+            <button type="button" class="btn-tag" id="tagSo99" onclick="setTemplate('so99')">Só 99</button>
+        </div>
+        <div id="subRegistrosContainer"></div>
+        <button type="button" class="btn btn-outline uber-btn" id="btnAddUber" style="margin-bottom:6px;">+ Uber Moto</button>
+        <button type="button" class="btn btn-outline nove9-btn" id="btnAdd99" style="margin-bottom:10px;">+ 99 Moto</button>
+        <button type="button" class="btn btn-primary" id="btnFinalizarDia">Finalizar Dia</button>
+    </div>
+
+    <!-- REGISTROS -->
+    <div class="page" id="pageRegistros">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:11px;color:#5a5a5a;font-weight:600;">Histórico</span>
+            <div style="display:flex;gap:4px;">
+                <button class="btn btn-sm btn-secondary" id="btnBackup">Backup</button>
+                <button class="btn btn-sm btn-secondary" id="btnImportar">Importar</button>
+                <button class="btn btn-sm btn-secondary" id="btnLimpar" style="color:#ff8a80;border-color:#3a1515;">Limpar</button>
+            </div>
+        </div>
+        <div id="listaRegistros"><div class="empty-dashboard" style="padding:40px 20px;"><div class="empty-icon" style="font-size:36px;">📋</div><div class="empty-text" style="font-size:13px;">Nenhum registro</div><div class="empty-sub">Vá em Lançar e comece a registrar</div></div></div>
+    </div>
+
+    <!-- MANUTENÇÃO -->
+    <div class="page" id="pageManutencao">
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="manutTipo"><option>Troca de óleo</option><option>Pneu</option><option>Relação/Corrente</option><option>Freios</option><option>Bateria</option><option>Outros</option></select></div>
+            <div class="form-group"><label class="form-label">Valor R$</label><input type="number" class="form-input" id="manutValor" placeholder="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Km atual</label><input type="number" class="form-input" id="manutKm" placeholder="0"></div>
+            <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="manutData"></div>
+        </div>
+        <button class="btn btn-primary" id="btnManutencao">Registrar</button>
+        <div id="listaManutencoes" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="page" id="pageConfig">
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Meta bruta/dia (R$)</label><input type="number" class="form-input" id="cfgMetaBruta" value="150"></div>
+            <div class="form-group"><label class="form-label">Meta líquida/dia (R$)</label><input type="number" class="form-input" id="cfgMetaLiquida" value="100"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Combustível</label><select class="form-select" id="cfgTipoCombustivel"><option value="gasolina">Gasolina</option><option value="etanol">Etanol</option></select></div>
+            <div class="form-group"><label class="form-label">Preço R$/litro</label><input type="number" class="form-input" id="cfgPrecoCombustivel" value="7.19" step="0.01"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Consumo (km/litro)</label><input type="number" class="form-input" id="cfgConsumo" value="35"></div>
+        <hr style="border-color:#1a1a1a;margin:14px 0;">
+        <div class="form-label" style="margin-bottom:8px;">Custos fixos do mês (valor total)</div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Seguro</label><input type="number" class="form-input" id="cfgSeguro" value="0" step="0.01"></div><div class="form-group"><label class="form-label">IPVA+Lic.</label><input type="number" class="form-input" id="cfgIpva" value="0" step="0.01"></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Celular</label><input type="number" class="form-input" id="cfgCelular" value="0" step="0.01"></div><div class="form-group"><label class="form-label">Outros fixos</label><input type="number" class="form-input" id="cfgOutrosFixos" value="0" step="0.01"></div></div>
+        <hr style="border-color:#1a1a1a;margin:14px 0;">
+        <div class="form-label" style="margin-bottom:8px;">Cores dos gráficos</div>
+        <div class="form-row" style="grid-template-columns: repeat(4,1fr);margin-bottom:8px;">
+            <div style="text-align:center;"><label style="font-size:8px;color:#888;">Comb.</label><input type="color" class="color-input" id="corCombustivel" value="#e53935"></div>
+            <div style="text-align:center;"><label style="font-size:8px;color:#888;">Outros</label><input type="color" class="color-input" id="corOutros" value="#ff9800"></div>
+            <div style="text-align:center;"><label style="font-size:8px;color:#888;">Fixos</label><input type="color" class="color-input" id="corFixos" value="#ffc107"></div>
+            <div style="text-align:center;"><label style="font-size:8px;color:#888;">Lucro</label><input type="color" class="color-input" id="corLucro" value="#06c167"></div>
+        </div>
+        <button class="btn btn-primary" id="btnSalvarConfig">Salvar</button>
+        <button class="btn btn-secondary" id="btnResetar" style="margin-top:6px;">Resetar app</button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item active" id="navDashboard">Dashboard</div>
+        <div class="nav-item" id="navLancar">Lançar</div>
+        <div class="nav-item" id="navRegistros">Registros</div>
+        <div class="nav-item" id="navManutencao">Moto</div>
+        <div class="nav-item" id="navConfig">Ajustes</div>
+    </div>
+
+    <!-- Modal Meta -->
+    <div class="modal-overlay" id="modalMeta">
+        <div class="modal">
+            <div class="modal-header"><span class="modal-title">Configurar Metas</span><button class="modal-close" id="btnCloseModal">✕</button></div>
+            <div class="form-group"><label class="form-label">Meta bruta por dia (R$)</label><input type="number" class="form-input" id="modalMetaBruta" value="150"></div>
+            <div class="form-group"><label class="form-label">Meta líquida por dia (R$)</label><input type="number" class="form-input" id="modalMetaLiquida" value="100"></div>
+            <p style="font-size:9px;color:#666;margin-bottom:12px;">Meta bruta = total recebido<br>Meta líquida = já descontando gastos do dia</p>
+            <button class="btn btn-primary" id="btnSalvarMeta">Salvar</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== MANIFEST PWA COM ÍCONES ADAPTÁVEIS =====
+        // Ícone base com padding seguro para formatos redondos (maskable)
+        const iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+            '<rect width="512" height="512" rx="100" fill="#000"/>' +
+            '<text x="256" y="280" font-size="160" font-weight="900" text-anchor="middle" fill="white" font-family="Arial,sans-serif" letter-spacing="-4">Moto</text>' +
+            '<text x="256" y="390" font-size="100" font-weight="700" text-anchor="middle" fill="#06c167" font-family="Arial,sans-serif" letter-spacing="8">Dash</text>' +
+            '</svg>';
+
+        // Ícone com padding extra para dispositivos que cortam as bordas (maskable safe zone)
+        const iconMaskableSVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+            '<rect width="512" height="512" fill="#000"/>' +
+            '<rect x="60" y="60" width="392" height="392" rx="80" fill="#000"/>' +
+            '<text x="256" y="270" font-size="140" font-weight="900" text-anchor="middle" fill="white" font-family="Arial,sans-serif" letter-spacing="-3">Moto</text>' +
+            '<text x="256" y="370" font-size="90" font-weight="700" text-anchor="middle" fill="#06c167" font-family="Arial,sans-serif" letter-spacing="6">Dash</text>' +
+            '</svg>';
+
+        const iconUrl = "data:image/svg+xml," + encodeURIComponent(iconSVG);
+        const iconMaskableUrl = "data:image/svg+xml," + encodeURIComponent(iconMaskableSVG);
+
+        const manifest = {
+            name: 'MotoDash',
+            short_name: 'MotoDash',
+            description: 'Dashboard para motoboys Uber Moto e 99 Moto',
+            start_url: '.',
+            display: 'standalone',
+            orientation: 'portrait',
+            background_color: '#000000',
+            theme_color: '#000000',
+            icons: [
+                {
+                    src: iconUrl,
+                    sizes: '512x512',
+                    type: 'image/svg+xml',
+                    purpose: 'any'
+                },
+                {
+                    src: iconMaskableUrl,
+                    sizes: '512x512',
+                    type: 'image/svg+xml',
+                    purpose: 'maskable'
+                },
+                {
+                    src: iconUrl,
+                    sizes: '192x192',
+                    type: 'image/svg+xml',
+                    purpose: 'any'
+                },
+                {
+                    src: iconMaskableUrl,
+                    sizes: '192x192',
+                    type: 'image/svg+xml',
+                    purpose: 'maskable'
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+
+        const linkManifest = document.createElement('link');
+        linkManifest.rel = 'manifest';
+        linkManifest.href = manifestUrl;
+        document.head.appendChild(linkManifest);
+
+        // ===== STORAGE =====
+        const SR='md_v20_regs',SC='md_v20_cfg',SM='md_v20_manut',SMTB='md_v20_metaBruta',SMTL='md_v20_metaLiquida';
+        const ALERTAS_KM={'Troca de óleo':1500,'Relação/Corrente':8000,'Pneu':15000,'Freios':10000};
+        const ZONAS={centro:'Centro / Shopping',zona_sul:'Zona Sul (Atalaia)',orla:'Orla / Aruana',zona_norte:'Zona Norte',grande_aj:'Grande Aracaju',misto:'Misto'};
+        const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        let R,C,M,metaBruta,metaLiquida,templateAtual='diaTodo',mesSelecionado;
+
+        function carregarDados(){
+            try{R=JSON.parse(localStorage.getItem(SR)||'[]')}catch(e){R=[]}
+            try{C=JSON.parse(localStorage.getItem(SC)||'{"tipoCombustivel":"gasolina","precoCombustivel":7.19,"consumo":35,"seguro":0,"ipva":0,"celular":0,"outrosFixos":0,"cores":{"combustivel":"#e53935","outros":"#ff9800","fixos":"#ffc107","lucro":"#06c167"}}')}catch(e){C={tipoCombustivel:'gasolina',precoCombustivel:7.19,consumo:35,seguro:0,ipva:0,celular:0,outrosFixos:0,cores:{combustivel:'#e53935',outros:'#ff9800',fixos:'#ffc107',lucro:'#06c167'}}}
+            try{M=JSON.parse(localStorage.getItem(SM)||'[]')}catch(e){M=[]}
+            metaBruta=parseFloat(localStorage.getItem(SMTB)||'150');metaLiquida=parseFloat(localStorage.getItem(SMTL)||'100');
+            if(R.length>0){mesSelecionado=gm()}else{mesSelecionado=null}
+        }
+        function save(){localStorage.setItem(SR,JSON.stringify(R));localStorage.setItem(SC,JSON.stringify(C));localStorage.setItem(SM,JSON.stringify(M));localStorage.setItem(SMTB,metaBruta.toString());localStorage.setItem(SMTL,metaLiquida.toString())}
+        function gm(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+        function ho(){return new Date().toISOString().split('T')[0]}
+        function filtrarMes(){if(!mesSelecionado)return[];return R.filter(r=>r.data&&r.data.startsWith(mesSelecionado))}
+        function temDados(){return R.length>0}
+        function temDadosMes(){return filtrarMes().length>0}
+        function getCustosFixos(){return (+C.seguro||0)+(+C.ipva||0)+(+C.celular||0)+(+C.outrosFixos||0)}
+        function getLucroLiquidoDia(data){let bruto=0,combustivel=0,outros=0;R.filter(r=>r.data===data).forEach(r=>{if(r.subs)r.subs.forEach(s=>{bruto+=(+s.bruto||0)+(+s.bonus||0);combustivel+=(+s.combustivel||0)});else{bruto+=(+r.bruto||0)+(+r.bonus||0);combustivel+=(+r.combustivel||0)}outros+=(+r.outros||0)});const diasTrabalhados=filtrarMes().length||1;const custoFixoDiario=getCustosFixos()/Math.max(1,C.diasUteis||22);return bruto-combustivel-outros-custoFixoDiario}
+        function getSemana(){const hoje=new Date();const diaSemana=hoje.getDay();const seg=new Date(hoje);seg.setDate(hoje.getDate()-(diaSemana===0?6:diaSemana-1));seg.setHours(0,0,0,0);const dom=new Date(seg);dom.setDate(seg.getDate()+6);dom.setHours(23,59,59,999);const sf=seg.toISOString().split('T')[0];const df=dom.toISOString().split('T')[0];const dias=[];for(let i=0;i<7;i++){const d=new Date(seg);d.setDate(seg.getDate()+i);dias.push(d.toISOString().split('T')[0])}return{inicio:sf,fim:df,dias}}
+        function getSemanaPassada(){const hoje=new Date();const diaSemana=hoje.getDay();const seg=new Date(hoje);seg.setDate(hoje.getDate()-(diaSemana===0?6:diaSemana-1)-7);seg.setHours(0,0,0,0);const dom=new Date(seg);dom.setDate(seg.getDate()+6);const dias=[];for(let i=0;i<7;i++){const d=new Date(seg);d.setDate(seg.getDate()+i);dias.push(d.toISOString().split('T')[0])}return{dias}}
+        function getRegistrosSemana(){const sem=getSemana();const registrosSemana=R.filter(r=>r.data>=sem.inicio&&r.data<=sem.fim);const porDia={};sem.dias.forEach(d=>{porDia[d]={uber:0,nove9:0,total:0,zona:null}});registrosSemana.forEach(r=>{if(porDia[r.data]){if(r.subs){r.subs.forEach(s=>{const b=(+s.bruto||0)+(+s.bonus||0);if((s.app||'').toLowerCase().includes('99'))porDia[r.data].nove9+=b;else porDia[r.data].uber+=b;porDia[r.data].total+=b})}else{const b=(+r.bruto||0)+(+r.bonus||0);porDia[r.data].total+=b}porDia[r.data].zona=r.zona||null}});return porDia}
+        function getPrimeiroMes(){if(R.length===0)return null;const primeiro=R.reduce((min,r)=>r.data<min?r.data:min,R[0].data);return primeiro.substring(0,7)}
+        function mostrarDashboard(){document.getElementById('emptyDashboard').style.display='none';if(temDados()){document.getElementById('mesSelector').classList.add('visible')}['secMetas','secSemanal','secCharts','secKPIs'].forEach(id=>document.getElementById(id).classList.add('visible'));document.getElementById('secCards').classList.add('visible')}
+        function esconderDashboard(){document.getElementById('emptyDashboard').style.display='block';document.getElementById('mesSelector').classList.remove('visible');['secMetas','secSemanal','secCharts','secKPIs','secZonas'].forEach(id=>document.getElementById(id).classList.remove('visible'));document.getElementById('secCards').classList.remove('visible');mesSelecionado=null}
+        function updateSemanal(){if(!temDadosMes())return;const porDia=getRegistrosSemana();const diasSemana=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const hoje=new Date().getDay();const maxVal=Math.max(1,...Object.values(porDia).map(d=>d.total));let totalSemana=0,diasComRegistro=0;let html='';Object.entries(porDia).forEach(([data,valores])=>{const diaNome=diasSemana[new Date(data+'T00:00:00').getDay()];const isHoje=data===ho();totalSemana+=valores.total;if(valores.total>0)diasComRegistro++;html+=`<div class="semanal-bar-wrap"><div class="semanal-val">${valores.total>0?'R$'+valores.total.toFixed(0):''}</div><div class="semanal-bar uber" style="height:${Math.max(2,(valores.uber/maxVal)*60)}px;${isHoje?'box-shadow:0 0 6px #06c16780;':''}"></div><div class="semanal-bar nove9" style="height:${Math.max(2,(valores.nove9/maxVal)*60)}px;${isHoje?'box-shadow:0 0 6px #ffc10780;':''}"></div><div class="semanal-dia" style="${isHoje?'color:#fff;font-weight:700;':''}">${diaNome}</div></div>`});document.getElementById('semanalBars').innerHTML=html;document.getElementById('semanalTotal').textContent='R$'+totalSemana.toFixed(0);const media=diasComRegistro>0?totalSemana/diasComRegistro:0;document.getElementById('semanalMedia').textContent=diasComRegistro>0?'Média: R$'+media.toFixed(0)+'/dia':'';const sp=getSemanaPassada();let totalPassada=0;sp.dias.forEach(d=>{const regs=R.filter(r=>r.data===d);regs.forEach(r=>{if(r.subs)r.subs.forEach(s=>totalPassada+=(+s.bruto||0)+(+s.bonus||0));else totalPassada+=(+r.bruto||0)+(+r.bonus||0)})});if(totalPassada>0&&totalSemana>0){const diff=((totalSemana-totalPassada)/totalPassada)*100;document.getElementById('semanalVs').textContent='vs semana passada: '+(diff>0?'+':'')+diff.toFixed(0)+'%';document.getElementById('semanalVs').style.color=diff>=0?'#06c167':'#ff453a'}else{document.getElementById('semanalVs').textContent=''}}
+        function updateBadges(){if(!temDados())return;let streak=0;const diasOrdenados=[...new Set(R.map(r=>r.data))].sort().reverse();for(const dia of diasOrdenados){let brutoDia=0;R.filter(r=>r.data===dia).forEach(r=>{if(r.subs)r.subs.forEach(s=>brutoDia+=(+s.bruto||0)+(+s.bonus||0));else brutoDia+=(+r.bruto||0)+(+r.bonus||0)});if(brutoDia>=metaBruta)streak++;else break}const badgeS=document.getElementById('badgeStreak');if(streak>=3){badgeS.style.display='inline';badgeS.textContent='🔥 '+streak+' dias'}else{badgeS.style.display='none'}let melhorDia=0;const rm=filtrarMes();rm.forEach(r=>{let b=0;if(r.subs)r.subs.forEach(s=>b+=(+s.bruto||0)+(+s.bonus||0));else b+=(+r.bruto||0)+(+r.bonus||0);if(b>melhorDia)melhorDia=b});const badgeR=document.getElementById('badgeRecord');if(melhorDia>=metaBruta*1.5){badgeR.style.display='inline';badgeR.textContent='🏆 R$'+melhorDia.toFixed(0)}else{badgeR.style.display='none'}}
+        function updateZonas(){if(!temDadosMes()){document.getElementById('secZonas').classList.remove('visible');return}const rm=filtrarMes();const zonasMap={};rm.forEach(r=>{const zona=r.zona||'misto';if(!zonasMap[zona])zonasMap[zona]={bruto:0,horas:0,dias:0};let b=0,h=0;if(r.subs)r.subs.forEach(s=>{b+=(+s.bruto||0)+(+s.bonus||0);h+=(+s.horas||0)});else{b+=(+r.bruto||0)+(+r.bonus||0);h+=(+r.horas||0)}zonasMap[zona].bruto+=b;zonasMap[zona].horas+=h;zonasMap[zona].dias++});const sorted=Object.entries(zonasMap).sort((a,b)=>{const ra=a[1].horas>0?a[1].bruto/a[1].horas:0;const rb=b[1].horas>0?b[1].bruto/b[1].horas:0;return rb-ra});if(sorted.length===0){document.getElementById('secZonas').classList.remove('visible');return}document.getElementById('secZonas').classList.add('visible');const maxRph=Math.max(1,...sorted.map(([,d])=>d.horas>0?d.bruto/d.horas:0));document.getElementById('zonaContent').innerHTML=sorted.map(([z,d])=>{const rph=d.horas>0?d.bruto/d.horas:0;const nome=ZONAS[z]||z;const pct=(rph/maxRph)*100;return`<div class="bar-row"><span class="bar-label">${nome.split('/')[0]}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#06c167;"></div></div><span class="bar-val">R$${rph.toFixed(0)}/h (${d.dias}d)</span></div>`}).join('')}
+        function donutSVG(segments,total,centerVal,centerLabel){if(total<=0)return'';const r=34,circ=2*Math.PI*r;let html=`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="${r}" fill="none" stroke="#1f1f1f" stroke-width="10"/>`;let offset=0;segments.forEach(s=>{const len=(s.value/total)*circ;html+=`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${s.color}" stroke-width="10" stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-offset}" stroke-linecap="butt"/>`;offset+=len});html+=`</svg>`;html+=`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;"><div style="font-size:14px;font-weight:700;color:#fff;">${centerVal}</div><div style="font-size:7px;color:#666;">${centerLabel}</div></div>`;return html}
+        function updateCharts(){if(!temDadosMes())return{bT:0,totalGastos:0,liq:0};const rm=filtrarMes();let bT=0,cT=0,oT=0,uberB=0,nove9B=0;rm.forEach(r=>{if(r.subs)r.subs.forEach(s=>{const b=(+s.bruto||0)+(+s.bonus||0);bT+=b;cT+=(+s.combustivel||0);if((s.app||'').toLowerCase().includes('99'))nove9B+=b;else uberB+=b});else{bT+=(+r.bruto||0)+(+r.bonus||0);cT+=(+r.combustivel||0)}oT+=(+r.outros||0)});const custosFixos=getCustosFixos();const manutReais=M.filter(m=>m.data&&m.data.startsWith(mesSelecionado)).reduce((s,m)=>s+(+m.valor||0),0);const totalGastos=cT+oT+custosFixos+manutReais;const liq=bT-totalGastos;const pctLucro=bT>0?Math.round((liq/bT)*100):0;const cores=C.cores||{combustivel:'#e53935',outros:'#ff9800',fixos:'#ffc107',lucro:'#06c167'};const distSegs=[{value:cT,color:cores.combustivel,label:'Comb.'},{value:oT,color:cores.outros,label:'Outros'},{value:custosFixos+manutReais,color:cores.fixos,label:'Fixos'},{value:Math.max(0,liq),color:cores.lucro,label:'Lucro'}].filter(s=>s.value>0.01);const distTotal=distSegs.reduce((s,x)=>s+x.value,0)||1;document.getElementById('donutDistribuicao').innerHTML=donutSVG(distSegs,distTotal,pctLucro+'%','Lucro');document.getElementById('legendDistribuicao').innerHTML=distSegs.map(s=>`<span><span class="legend-dot" style="background:${s.color};"></span>${s.label} ${bT>0?((s.value/bT)*100).toFixed(0):0}%</span>`).join('');const vsSegs=[{value:uberB,color:'#06c167',label:'Uber'},{value:nove9B,color:'#ffc107',label:'99'}].filter(s=>s.value>0.01);const vsTotal=vsSegs.reduce((s,x)=>s+x.value,0)||1;document.getElementById('donutVs').innerHTML=donutSVG(vsSegs,vsTotal,(uberB>nove9B?'Uber':nove9B>uberB?'99':'--'),'Maior');document.getElementById('legendVs').innerHTML=vsSegs.map(s=>`<span><span class="legend-dot" style="background:${s.color};"></span>${s.label} ${vsTotal>0?((s.value/vsTotal)*100).toFixed(0):0}%</span>`).join('');const maxVal=Math.max(bT,totalGastos,1);const barSegs=[{label:'Capital',value:bT,color:'#06c167',pct:100,cls:''},{label:'Combustível',value:cT,color:cores.combustivel,pct:bT>0?(cT/bT)*100:0,cls:''},{label:'Outros',value:oT,color:cores.outros,pct:bT>0?(oT/bT)*100:0,cls:''},{label:'Fixos',value:custosFixos,color:cores.fixos,pct:bT>0?(custosFixos/bT)*100:0,cls:''}];if(manutReais>0)barSegs.push({label:'Manutenções',value:manutReais,color:'#e91e63',pct:bT>0?(manutReais/bT)*100:0,cls:'separator'});barSegs.push({label:'Lucro',value:Math.max(0,liq),color:cores.lucro,pct:pctLucro,cls:''});document.getElementById('barCapitalGastos').innerHTML=barSegs.map(s=>`<div class="bar-row ${s.cls}"><span class="bar-label">${s.label}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,(s.value/maxVal)*100)}%;background:${s.color};"></div></div><span class="bar-val">R$${s.value.toFixed(0)} (${s.pct.toFixed(0)}%)</span></div>`).join('');const infoBox=document.getElementById('infoManutencao');if(custosFixos>0||manutReais>0){let msg='';if(custosFixos>0)msg+='📋 <strong>Custos fixos:</strong> R$'+custosFixos.toFixed(0);if(manutReais>0){if(msg)msg+='<br>';const detalhes=M.filter(m=>m.data&&m.data.startsWith(mesSelecionado)).map(m=>m.tipo+': R$'+(+m.valor).toFixed(0)).join(' · ');msg+='🔧 <strong>Manutenções:</strong> R$'+manutReais.toFixed(0)+'<br><span style="font-size:7px;">'+detalhes+'</span>'}infoBox.innerHTML=msg;infoBox.style.display='block'}else{infoBox.style.display='none'}return{bT,totalGastos,liq}}
+        function atualizarMetas(){if(!temDados()||!mesSelecionado||mesSelecionado!==gm()){document.getElementById('metaBrutaFill').style.width='0%';document.getElementById('metaBrutaTexto').textContent='R$ 0 / R$ '+metaBruta.toFixed(0);document.getElementById('metaBrutaFill').classList.remove('completed');document.getElementById('metaLiquidaFill').style.width='0%';document.getElementById('metaLiquidaTexto').textContent='R$ 0 / R$ '+metaLiquida.toFixed(0);document.getElementById('metaLiquidaFill').classList.remove('completed');return}let brutoHoje=0;R.filter(r=>r.data===ho()).forEach(r=>{if(r.subs)r.subs.forEach(s=>brutoHoje+=(+s.bruto||0)+(+s.bonus||0));else brutoHoje+=(+r.bruto||0)+(+r.bonus||0)});const pBruta=metaBruta>0?Math.min(100,(brutoHoje/metaBruta)*100):0;document.getElementById('metaBrutaFill').style.width=pBruta+'%';document.getElementById('metaBrutaTexto').textContent='R$ '+brutoHoje.toFixed(0)+' / R$ '+metaBruta.toFixed(0);document.getElementById('metaBrutaFill').classList.toggle('completed',pBruta>=100);const lucroLiquidoHoje=getLucroLiquidoDia(ho());const pLiquida=metaLiquida>0?Math.min(100,Math.max(0,(lucroLiquidoHoje/metaLiquida)*100)):0;document.getElementById('metaLiquidaFill').style.width=pLiquida+'%';document.getElementById('metaLiquidaTexto').textContent='R$ '+Math.max(0,lucroLiquidoHoje).toFixed(0)+' / R$ '+metaLiquida.toFixed(0);document.getElementById('metaLiquidaFill').classList.toggle('completed',pLiquida>=100)}
+        function atualizarSeletorMes(){if(!mesSelecionado)return;const[ano,mes]=mesSelecionado.split('-');document.getElementById('mesNome').textContent=MESES[parseInt(mes)-1]+' '+ano;const rm=filtrarMes();if(rm.length===0){document.getElementById('mesTotal').textContent='sem registros'}else{const totalCorridas=rm.reduce((s,r)=>s+(+r.entregas||0),0);const totalBruto=rm.reduce((s,r)=>{if(r.subs)return s+r.subs.reduce((ss,x)=>ss+(+x.bruto||0)+(+x.bonus||0),0);return s+(+r.bruto||0)+(+r.bonus||0)},0);document.getElementById('mesTotal').textContent=totalCorridas+' corridas · R$'+totalBruto.toFixed(0)}}
+        function mesAnterior(){if(!mesSelecionado||R.length===0)return;const primeiroMes=getPrimeiroMes();const[ano,mes]=mesSelecionado.split('-');let m=parseInt(mes)-1;let a=parseInt(ano);if(m<1){m=12;a--}const novoMes=a+'-'+String(m).padStart(2,'0');if(primeiroMes&&novoMes<primeiroMes)return;mesSelecionado=novoMes;calcDash()}
+        function mesSeguinte(){if(!mesSelecionado)return;const[ano,mes]=mesSelecionado.split('-');let m=parseInt(mes)+1;let a=parseInt(ano);if(m>12){m=1;a++}const novoMes=a+'-'+String(m).padStart(2,'0');if(novoMes>gm())return;mesSelecionado=novoMes;calcDash()}
+        function mesAtual(){if(R.length>0){mesSelecionado=gm();calcDash()}}
+        function calcDash(){if(!temDados()){esconderDashboard();renderizarRegistros();renderizarManutencoes();return}if(!mesSelecionado)mesSelecionado=gm();mostrarDashboard();atualizarSeletorMes();if(!temDadosMes()){renderizarRegistros();renderizarManutencoes();return}const rm=filtrarMes();let kmT=0,hT=0,eT=0,cT=0;rm.forEach(r=>{kmT+=(+r.km||0);hT+=(+r.horas||0);eT+=(+r.entregas||0);if(r.subs)r.subs.forEach(s=>cT+=(+s.combustivel||0));else cT+=(+r.combustivel||0)});const chartData=updateCharts();document.getElementById('cardBruto').textContent='R$'+chartData.bT.toFixed(0);document.getElementById('cardCustos').textContent='R$'+chartData.totalGastos.toFixed(0);document.getElementById('cardLiquido').textContent='R$'+chartData.liq.toFixed(0);document.getElementById('kpiHora').textContent='R$'+(hT>0?chartData.liq/hT:0).toFixed(2);document.getElementById('kpiKm').textContent='R$'+(kmT>0?chartData.liq/kmT:0).toFixed(2);document.getElementById('kpiEntregas').textContent=Math.round(eT);document.getElementById('kpiDias').textContent=rm.length;document.getElementById('kpiTotalKm').textContent=kmT.toFixed(0);document.getElementById('kpiCustoKm').textContent='R$'+(kmT>0?cT/kmT:0).toFixed(2);updateSemanal();updateBadges();updateZonas();atualizarMetas();renderizarRegistros();renderizarManutencoes()}
+        function renderizarRegistros(){const c=document.getElementById('listaRegistros'),rm=filtrarMes().sort((a,b)=>new Date(b.data)-new Date(a.data));if(rm.length===0){c.innerHTML='<div class="empty-dashboard" style="padding:40px 20px;"><div class="empty-icon" style="font-size:36px;">📋</div><div class="empty-text" style="font-size:13px;">Nenhum registro neste mês</div><div class="empty-sub">Vá em Lançar e comece a registrar</div></div>';return}c.innerHTML=rm.map(r=>{const df=new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}),bt=(+r.bruto||0)+(+r.bonus||0),ld=bt-(+r.combustivel||0)-(+r.outros||0),zonaNome=ZONAS[r.zona]?' · '+ZONAS[r.zona].split('/')[0]:'',subs=r.subs||[],ah=subs.map(s=>'<span class="record-app '+((s.app||'').toLowerCase().includes('99')?'nove9':'uber')+'"><span class="app-ind '+((s.app||'').toLowerCase().includes('99')?'nove9':'uber')+'"></span>'+(s.app||'Uber')+' R$'+((+s.bruto||0)+(+s.bonus||0)).toFixed(0)+'</span>').join('');return'<div class="record-item"><div class="record-header"><span class="record-date">'+df+'</span><span class="record-value">R$'+ld.toFixed(0)+'</span></div><div class="record-tags"><span class="record-tag">'+r.horas+'h</span><span class="record-tag">'+r.km+'km</span><span class="record-tag">'+(r.entregas||'?')+' corr.</span>'+(r.zona?'<span class="record-tag">'+zonaNome+'</span>':'')+'</div>'+(ah?'<div class="record-apps">'+ah+'</div>':'')+'</div>'}).join('')}
+        function renderizarManutencoes(){const c=document.getElementById('listaManutencoes');if(M.length===0){c.innerHTML='<div style="text-align:center;padding:20px;color:#555;">Nenhuma manutenção registrada</div>';return}const kmT=R.reduce((s,r)=>s+(+r.km||0),0);c.innerHTML=M.sort((a,b)=>new Date(b.data)-new Date(a.data)).map(m=>{const kd=kmT-(+m.km||0),lim=ALERTAS_KM[m.tipo];let cls='';if(lim&&kd>=lim)cls='danger';else if(lim&&kd>=lim*0.8)cls='warning';return'<div class="maint-item '+cls+'"><div class="maint-info"><strong>'+m.tipo+'</strong> · R$'+(+m.valor).toFixed(0)+'<small>'+new Date(m.data+'T00:00:00').toLocaleDateString('pt-BR')+' · Km '+(+m.km).toFixed(0)+(lim?' · A cada '+lim+'km | Rodou '+kd.toFixed(0)+'km':'')+'</small></div><button data-mid="'+m.id+'" class="btn-delete btn-del-manut">×</button></div>'}).join('');document.querySelectorAll('.btn-del-manut').forEach(b=>b.addEventListener('click',function(){M=M.filter(x=>x.id!==+this.dataset.mid);save();calcDash()}))}
+        function zerarCampos(){document.getElementById('subRegistrosContainer').innerHTML='';adicionarSubRegistro('Uber Moto');const el=document.querySelector('#subRegistrosContainer > div:last-child');if(el){el.querySelector('.sub-horas').value='';el.querySelector('.sub-km').value='';el.querySelector('.sub-entregas').value='';el.querySelector('.sub-bruto').value='';el.querySelector('.sub-combustivel').value='';el.querySelector('.sub-bonus').value='0'}document.querySelectorAll('.btn-tag').forEach(b=>b.classList.remove('active'));templateAtual='zerado'}
+        function setTemplate(tipo){templateAtual=tipo;document.querySelectorAll('.btn-tag').forEach(b=>b.classList.remove('active'));if(tipo!=='zerado')document.getElementById('tag'+tipo.charAt(0).toUpperCase()+tipo.slice(1)).classList.add('active');document.getElementById('subRegistrosContainer').innerHTML='';const pc=+C.precoCombustivel||7.19,cons=+C.consumo||35;if(tipo==='diaTodo'){[{app:'Uber Moto',h:4,bh:25,kh:11,eh:3},{app:'99 Moto',h:4,bh:23,kh:12,eh:2.7}].forEach(a=>{adicionarSubRegistro(a.app);const u=document.querySelector('#subRegistrosContainer > div:last-child');if(u){u.querySelector('.sub-horas').value=a.h;u.querySelector('.sub-km').value=Math.round(a.kh*a.h);u.querySelector('.sub-entregas').value=Math.round(a.eh*a.h);u.querySelector('.sub-bruto').value=Math.round(a.bh*a.h);u.querySelector('.sub-combustivel').value=Math.round((a.kh*a.h/cons)*pc);u.querySelector('.sub-bonus').value=10}})}else if(tipo==='soUber'){adicionarSubRegistro('Uber Moto');const u=document.querySelector('#subRegistrosContainer > div:last-child');if(u){u.querySelector('.sub-horas').value=8;u.querySelector('.sub-km').value=88;u.querySelector('.sub-entregas').value=24;u.querySelector('.sub-bruto').value=200;u.querySelector('.sub-combustivel').value=Math.round((88/cons)*pc);u.querySelector('.sub-bonus').value=15}}else if(tipo==='so99'){adicionarSubRegistro('99 Moto');const u=document.querySelector('#subRegistrosContainer > div:last-child');if(u){u.querySelector('.sub-horas').value=8;u.querySelector('.sub-km').value=96;u.querySelector('.sub-entregas').value=22;u.querySelector('.sub-bruto').value=184;u.querySelector('.sub-combustivel').value=Math.round((96/cons)*pc);u.querySelector('.sub-bonus').value=12}}}
+        function adicionarSubRegistro(appP){const c=document.getElementById('subRegistrosContainer'),d=document.createElement('div');d.style.cssText='background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:12px;margin-bottom:8px;';d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;font-weight:600;color:'+(appP.includes('Uber')?'#06c167':'#ffc107')+';">'+appP+'</span><button class="btn-delete btn-remove-sub">×</button></div><div class="form-row"><div class="form-group"><label class="form-label">Horas</label><input type="number" class="form-input sub-horas" placeholder="0"></div><div class="form-group"><label class="form-label">Km</label><input type="number" class="form-input sub-km" placeholder="0"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Corridas</label><input type="number" class="form-input sub-entregas" placeholder="0"></div><div class="form-group"><label class="form-label">Bruto R$</label><input type="number" class="form-input sub-bruto" placeholder="0" step="0.01"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Combustível R$</label><input type="number" class="form-input sub-combustivel" placeholder="0" step="0.01"></div><div class="form-group"><label class="form-label">Bônus R$</label><input type="number" class="form-input sub-bonus" placeholder="0" step="0.01" value="0"></div></div>';c.appendChild(d);d.querySelector('.btn-remove-sub').addEventListener('click',()=>{d.remove();calcDash()})}
+        function coletarSubs(){const s=[];document.querySelectorAll('#subRegistrosContainer > div').forEach(el=>s.push({app:'Uber Moto',horas:+el.querySelector('.sub-horas')?.value||0,km:+el.querySelector('.sub-km')?.value||0,entregas:+el.querySelector('.sub-entregas')?.value||0,bruto:+el.querySelector('.sub-bruto')?.value||0,combustivel:+el.querySelector('.sub-combustivel')?.value||0,bonus:+el.querySelector('.sub-bonus')?.value||0}));return s}
+        function finalizarDia(){const data=document.getElementById('inputData').value||ho();const zona=document.getElementById('inputZona').value;const subs=coletarSubs();if(subs.length===0)return alert('Adicione pelo menos um app!');R.unshift({id:Date.now(),data,zona,horas:subs.reduce((s,x)=>s+x.horas,0),km:subs.reduce((s,x)=>s+x.km,0),bruto:subs.reduce((s,x)=>s+x.bruto+x.bonus,0),combustivel:subs.reduce((s,x)=>s+x.combustivel,0),outros:0,entregas:subs.reduce((s,x)=>s+x.entregas,0),subs});save();zerarCampos();mesSelecionado=gm();calcDash();switchPage('dashboard')}
+        function adicionarManutencao(){const t=document.getElementById('manutTipo').value,v=document.getElementById('manutValor').value,k=document.getElementById('manutKm').value,d=document.getElementById('manutData').value||ho();if(!v||!k)return alert('Preencha valor e km!');M.push({id:Date.now(),tipo:t,valor:+v,km:+k,data:d});save();document.getElementById('manutValor').value='';document.getElementById('manutKm').value='';calcDash()}
+        function salvarConfig(){C={tipoCombustivel:document.getElementById('cfgTipoCombustivel').value,precoCombustivel:+document.getElementById('cfgPrecoCombustivel').value||7.19,consumo:+document.getElementById('cfgConsumo').value||35,seguro:+document.getElementById('cfgSeguro').value||0,ipva:+document.getElementById('cfgIpva').value||0,celular:+document.getElementById('cfgCelular').value||0,outrosFixos:+document.getElementById('cfgOutrosFixos').value||0,cores:{combustivel:document.getElementById('corCombustivel').value,outros:document.getElementById('corOutros').value,fixos:document.getElementById('corFixos').value,lucro:document.getElementById('corLucro').value}};metaBruta=+document.getElementById('cfgMetaBruta').value||150;metaLiquida=+document.getElementById('cfgMetaLiquida').value||100;save();calcDash();switchPage('dashboard');alert('Salvo!')}
+        function carregarConfig(){document.getElementById('cfgTipoCombustivel').value=C.tipoCombustivel||'gasolina';document.getElementById('cfgPrecoCombustivel').value=C.precoCombustivel||7.19;document.getElementById('cfgConsumo').value=C.consumo||35;document.getElementById('cfgSeguro').value=C.seguro||0;document.getElementById('cfgIpva').value=C.ipva||0;document.getElementById('cfgCelular').value=C.celular||0;document.getElementById('cfgOutrosFixos').value=C.outrosFixos||0;document.getElementById('cfgMetaBruta').value=metaBruta;document.getElementById('cfgMetaLiquida').value=metaLiquida;const co=C.cores||{combustivel:'#e53935',outros:'#ff9800',fixos:'#ffc107',lucro:'#06c167'};document.getElementById('corCombustivel').value=co.combustivel;document.getElementById('corOutros').value=co.outros;document.getElementById('corFixos').value=co.fixos;document.getElementById('corLucro').value=co.lucro}
+        function exportarDados(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({R,C,M,metaBruta,metaLiquida,v:'2.20'},null,2)],{type:'application/json'}));a.download='motodash_'+gm()+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);alert('Backup exportado!')}
+        function importarDados(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(confirm('Importar?')){R=d.R||[];C=d.C||C;M=d.M||[];metaBruta=d.metaBruta||150;metaLiquida=d.metaLiquida||100;save();carregarConfig();if(R.length>0){mesSelecionado=gm()}else{mesSelecionado=null}calcDash()}}catch{alert('Inválido!')}};r.readAsText(f)};i.click()}
+        function switchPage(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page'+page.charAt(0).toUpperCase()+page.slice(1)).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));const nav=document.getElementById('nav'+page.charAt(0).toUpperCase()+page.slice(1));if(nav)nav.classList.add('active');if(page==='manutencao')renderizarManutencoes();if(page==='registros')renderizarRegistros();if(page==='dashboard')calcDash()}
+        function abrirModalMeta(){document.getElementById('modalMetaBruta').value=metaBruta;document.getElementById('modalMetaLiquida').value=metaLiquida;document.getElementById('modalMeta').classList.add('show')}
+        function setupListeners(){document.getElementById('btnCloseModal').addEventListener('click',()=>document.getElementById('modalMeta').classList.remove('show'));document.getElementById('btnSalvarMeta').addEventListener('click',()=>{metaBruta=+document.getElementById('modalMetaBruta').value||150;metaLiquida=+document.getElementById('modalMetaLiquida').value||100;save();document.getElementById('modalMeta').classList.remove('show');calcDash()});document.getElementById('btnAddUber').addEventListener('click',()=>adicionarSubRegistro('Uber Moto'));document.getElementById('btnAdd99').addEventListener('click',()=>adicionarSubRegistro('99 Moto'));document.getElementById('btnFinalizarDia').addEventListener('click',finalizarDia);document.getElementById('btnBackup').addEventListener('click',exportarDados);document.getElementById('btnImportar').addEventListener('click',importarDados);document.getElementById('btnLimpar').addEventListener('click',()=>{if(confirm('Apagar registros?')){R=[];save();calcDash()}});document.getElementById('btnManutencao').addEventListener('click',adicionarManutencao);document.getElementById('btnSalvarConfig').addEventListener('click',salvarConfig);document.getElementById('btnResetar').addEventListener('click',()=>{if(confirm('Resetar tudo?')){R=[];M=[];metaBruta=150;metaLiquida=100;C={tipoCombustivel:'gasolina',precoCombustivel:7.19,consumo:35,seguro:0,ipva:0,celular:0,outrosFixos:0,cores:{combustivel:'#e53935',outros:'#ff9800',fixos:'#ffc107',lucro:'#06c167'}};save();carregarConfig();mesSelecionado=null;calcDash()}});['dashboard','lancar','registros','manutencao','config'].forEach(p=>document.getElementById('nav'+p.charAt(0).toUpperCase()+p.slice(1)).addEventListener('click',()=>switchPage(p)))}
+        function init(){carregarDados();document.getElementById('inputData').value=ho();document.getElementById('manutData').value=ho();carregarConfig();zerarCampos();setupListeners();calcDash();
+            setTimeout(function(){document.getElementById('splashScreen').classList.add('hide');},1000);
+        }
+        if('serviceWorker' in navigator){
+            navigator.serviceWorker.register(URL.createObjectURL(new Blob([
+                "self.addEventListener('install',e=>self.skipWaiting());",
+                "self.addEventListener('activate',e=>e.waitUntil(clients.claim()));",
+                "self.addEventListener('fetch',e=>{",
+                "e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{",
+                "if(resp.ok){const c=resp.clone();caches.open('md-v20').then(ca=>ca.put(e.request,c));}",
+                "return resp;",
+                "})));",
+                "});"
+            ],{type:'application/javascript'}))).catch(()=>{});
+        }
+        document.addEventListener('DOMContentLoaded',init);
+    </script>
+</body>
+</html>
